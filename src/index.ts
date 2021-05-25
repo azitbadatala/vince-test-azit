@@ -1,4 +1,6 @@
-import express from 'express';
+import express, { response } from 'express';
+import { responseBuilder } from './common/response-builder';
+import authorizeUser from './service/authorize-service';
 const app = express()
 const port = 3000
 
@@ -7,10 +9,14 @@ app.use(express.json())
 app.get('/status', (req, res) => { res.status(200).end(); });
 app.head('/status', (req, res) => { res.status(200).end(); });
 
+
 const basicAuthHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (true) {
-    res.set('WWW-Authenticate', 'Basic realm="tech-test-3"')
-    res.status(401).send('Authentication required')
+  const authHeader: any = req.headers['authorization'];
+  try {
+    authorizeUser(authHeader);
+  } catch(err) {
+    console.error("Error raised with the cause: ", err.message);
+    responseBuilder(err, res);
   }
   
   next()
